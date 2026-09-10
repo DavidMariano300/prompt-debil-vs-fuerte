@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="topbar">
+  <h1>Dashboard de usuarios</h1>
+  <div class="user-info">
+    <span id="welcome-msg"></span>
+    <button class="btn-logout" id="logout-btn">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="container">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Registrado el</th>
+      </tr>
+    </thead>
+    <tbody id="users-tbody">
+      <tr><td colspan="4" class="loading">Cargando usuarios...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>

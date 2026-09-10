@@ -1,0 +1,28 @@
+# Dependencias
+node_modules/
+
+# Secretos — NUNCA subir. Las variables necesarias están documentadas en el README.
+.env
+.env.*
+!.env.example
+
+# Bases de datos SQLite generadas en tiempo de ejecución.
+# Ojo: los .gitignore de Debil/ y Fuerte/ usan "*.sqlite", que NO cubre
+# los archivos auxiliares -wal/-shm del modo WAL. Aquí sí se cubren.
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite3
+*.db
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+*.log
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

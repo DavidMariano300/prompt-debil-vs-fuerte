@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Prompt Débil vs. Prompt Fuerte · Claude Code</title>
+
+<!-- Reveal.js 4.5.0 (núcleo) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css" />
+
+<!-- Tailwind CSS (CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    important: true,
+    theme: {
+      extend: {
+        colors: {
+          weak: { DEFAULT: '#f87171', dim: '#7f1d1d' },
+          strong: { DEFAULT: '#34d399', dim: '#064e3b' },
+          brand: { 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5' }
+        }
+      }
+    }
+  };
+</script>
+
+<style>
+  /* Reveal 4.x aplica la clase .reveal-viewport al propio <body> y le fija
+     un fondo blanco: hay que ganarle en especificidad. */
+  html, body, .reveal-viewport {
+    background-color: #020617;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(60rem 40rem at 15% -10%, rgba(99, 102, 241, 0.18), transparent 60%),
+      radial-gradient(50rem 35rem at 100% 110%, rgba(16, 185, 129, 0.12), transparent 60%);
+  }
+  .reveal { position: relative; z-index: 1; }
+  .reveal {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 26px;
+    color: #e2e8f0;
+    -webkit-font-smoothing: antialiased;
+  }
+  .reveal .slides { text-align: left; }
+  .reveal .slides > section,
+  .reveal .slides > section > section { height: 100%; padding: 0; }
+  .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+    text-transform: none;
+    letter-spacing: normal;
+    text-shadow: none;
+    color: inherit;
+    margin: 0;
+  }
+  .reveal p, .reveal ul, .reveal ol, .reveal table { margin: 0; }
+  .reveal code { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+  .reveal table { border-collapse: collapse; }
+  .reveal table th, .reveal table td { border: none; }
+
+  /* Controles de navegación */
+  .reveal .controls { color: #818cf8; }
+  .reveal .progress { color: #6366f1; background: rgba(148, 163, 184, 0.15); height: 4px; }
+  .reveal .slide-number {
+    background: rgba(15, 23, 42, 0.85);
+    color: #94a3b8;
+    font-size: 14px;
+    border-radius: 6px;
+    padding: 4px 10px;
+  }
+
+  .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; }
+</style>
+</head>
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ===================== 1 · PORTADA ===================== -->
+<section data-transition="fade">
+  <div class="h-full flex flex-col justify-center px-20">
+
+    <div class="flex items-center gap-3 mb-8">
+      <span class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-black text-lg">P</span>
+      <span class="text-xs font-bold uppercase tracking-[0.28em] text-brand-400">Ingeniería de Prompts</span>
+    </div>
+
+    <h1 class="text-6xl font-black leading-[1.05] tracking-tight text-white">
+      Ingeniería de Prompts<br />en Desarrollo
+    </h1>
+
+    <p class="mt-6 text-3xl font-light text-slate-300">
+      Prompt <span class="font-semibold text-weak">Débil</span>
+      <span class="text-slate-600 mx-2">vs.</span>
+      Prompt <span class="font-semibold text-strong">Fuerte</span>
+      <span class="text-slate-500 text-2xl">con Claude Code</span>
+    </p>
+
+    <div class="mt-8 h-px w-full bg-gradient-to-r from-brand-500 via-slate-700 to-transparent"></div>
+
+    <p class="mt-6 text-lg text-slate-400 max-w-4xl leading-relaxed">
+      Misma tarea, dos instrucciones: una app de <span class="text-slate-200">login + dashboard</span> con
+      Express, JWT, bcrypt y SQLite. Lo que cambia no es el modelo, es el prompt.
+    </p>
+
+    <div class="mt-10 grid grid-cols-4 gap-4">
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 px-5 py-4">
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Líneas de código</p>
+        <p class="text-2xl font-bold"><span class="text-weak">534</span> <span class="text-slate-600 text-lg">→</span> <span class="text-strong">993</span></p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 px-5 py-4">
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Logs en backend</p>
+        <p class="text-2xl font-bold"><span class="text-weak">1</span> <span class="text-slate-600 text-lg">→</span> <span class="text-strong">37</span></p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 px-5 py-4">
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Bloques try/catch</p>
+        <p class="text-2xl font-bold"><span class="text-weak">0</span> <span class="text-slate-600 text-lg">→</span> <span class="text-strong">4</span></p>
+      </div>
+      <div class="rounded-xl border border-slate-800 bg-slate-900/60 px-5 py-4">
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 mb-1">Documentación</p>
+        <p class="text-2xl font-bold"><span class="text-weak">0</span> <span class="text-slate-600 text-lg">→</span> <span class="text-strong">71</span> <span class="text-sm text-slate-500 font-normal">líneas</span></p>
+      </div>
+    </div>
+
+    <p class="mt-10 text-sm text-slate-600 mono">./Debil &nbsp;·&nbsp; ./Fuerte &nbsp;·&nbsp; análisis comparativo de código</p>
+  </div>
+</section>
+
+
+<!-- ===================== 2 · SEGURIDAD ===================== -->
+<section>
+  <div class="h-full flex flex-col px-16 pt-10 pb-6">
+
+    <div class="flex items-baseline gap-4">
+      <span class="text-xs font-bold uppercase tracking-[0.28em] text-brand-400">01</span>
+      <h2 class="text-4xl font-black tracking-tight text-white">Seguridad y Autenticación</h2>
+    </div>
+    <div class="mt-4 mb-5 h-px w-full bg-gradient-to-r from-brand-500 to-transparent"></div>
+
+    <table class="w-full text-[15px]">
+      <thead>
+        <tr class="text-[11px] uppercase tracking-widest text-slate-500">
+          <th class="text-left font-semibold pb-3 pl-2 w-[26%]">Aspecto</th>
+          <th class="text-left font-semibold pb-3 px-4 w-[37%]">
+            <span class="mono text-weak">./Debil</span>
+          </th>
+          <th class="text-left font-semibold pb-3 px-4 w-[37%]">
+            <span class="mono text-strong">./Fuerte</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="align-top">
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">bcrypt</td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono text-weak">hashSync</code> / <code class="mono text-weak">compareSync</code><br />
+            <span class="text-slate-500 text-[13px]">Bloquea el event loop en cada login.</span>
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono text-strong">await bcrypt.hash</code> / <code class="mono text-strong">compare</code><br />
+            <span class="text-slate-500 text-[13px]">Asíncrono, constante <code class="mono">SALT_ROUNDS</code> documentada.</span>
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Secreto JWT</td>
+          <td class="py-3 px-4 text-slate-400">
+            Se usa <code class="mono">process.env.JWT_SECRET</code> <span class="text-weak font-semibold">sin verificar</span>.<br />
+            <span class="text-slate-500 text-[13px]">Sin <code class="mono">.env</code> arranca igual y falla en runtime con 500.</span>
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            <span class="text-strong font-semibold">Fail-fast</span> al arrancar:<br />
+            <code class="mono text-[13px] text-slate-300">if (!JWT_SECRET) → [CONFIG ERROR] + exit(1)</code>
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Payload del token</td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono text-[13px]">{ id, name, email }</code><br />
+            <span class="text-slate-500 text-[13px]">Datos personales viajan en un token legible por cualquiera.</span>
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono text-[13px]">{ id, username }</code><br />
+            <span class="text-slate-500 text-[13px]">Claims mínimos; el resto se consulta autenticado.</span>
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Expiración</td>
+          <td class="py-3 px-4 text-slate-400">
+            401 genérico: <span class="italic">«Token inválido o expirado»</span>.
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            Distingue <code class="mono text-[13px]">TokenExpiredError</code> y responde<br />
+            <span class="italic">«La sesión ha expirado»</span> + log <code class="mono text-[13px]">[SECURITY ALERT]</code>.
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Manejo de errores</td>
+          <td class="py-3 px-4 text-slate-400">
+            <span class="text-weak font-semibold">0</span> bloques <code class="mono">try/catch</code> en las rutas.<br />
+            <span class="text-slate-500 text-[13px]">Un fallo de BD escapa a Express y filtra el stack trace.</span>
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono">try/catch</code> por endpoint + middleware de error<br />
+            <span class="text-slate-500 text-[13px]">y 404 JSON para <code class="mono">/api</code>. Mensajes genéricos al cliente.</span>
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Archivo <code class="mono">.env</code></td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono text-[13px] text-weak">cambia_esta_clave_por_una_segura</code><br />
+            <span class="text-slate-500 text-[13px]">Placeholder que nadie obliga a cambiar.</span>
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            Secreto largo con sufijo aleatorio + tabla de variables<br />
+            <span class="text-slate-500 text-[13px]">y advertencia explícita en el <code class="mono">README</code>.</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mt-auto pt-4 rounded-lg border border-slate-800 bg-slate-900/50 px-5 py-3">
+      <p class="text-[13px] text-slate-400">
+        <span class="font-bold uppercase tracking-wider text-slate-500 text-[11px]">Empate honesto ·</span>
+        ambos usan <span class="text-slate-200">bcrypt con salt de 10</span>, consultas <span class="text-slate-200">parametrizadas</span> (sin SQL injection),
+        excluyen <code class="mono">password</code> de las respuestas y listan <code class="mono">.env</code> en <code class="mono">.gitignore</code>.
+        Ninguno de los dos incluye un <code class="mono">.env.example</code>.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===================== 3 · ARQUITECTURA ===================== -->
+<section>
+  <div class="h-full flex flex-col px-16 pt-10 pb-6">
+
+    <div class="flex items-baseline gap-4">
+      <span class="text-xs font-bold uppercase tracking-[0.28em] text-brand-400">02</span>
+      <h2 class="text-4xl font-black tracking-tight text-white">Arquitectura y Mantenibilidad</h2>
+    </div>
+    <div class="mt-4 mb-5 h-px w-full bg-gradient-to-r from-brand-500 to-transparent"></div>
+
+    <div class="grid grid-cols-2 gap-6 flex-1">
+
+      <!-- DEBIL -->
+      <div class="rounded-2xl border border-weak/30 bg-weak/[0.06] p-6 flex flex-col">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="w-2 h-2 rounded-full bg-weak"></span>
+          <span class="mono text-sm font-bold text-weak">./Debil</span>
+          <span class="ml-auto text-[11px] uppercase tracking-widest text-slate-500">118 líneas de backend</span>
+        </div>
+
+        <pre class="mono text-[13px] leading-[1.6] text-slate-400 mb-4">src/
+├── server.js        <span class="text-slate-600">26 líneas</span>
+├── routes/
+│   ├── auth.js      <span class="text-slate-600">52</span>
+│   └── users.js     <span class="text-slate-600">21</span>
+├── middleware/auth.js
+└── db/index.js      <span class="text-slate-600">solo la conexión</span></pre>
+
+        <ul class="space-y-2.5 text-[14px] text-slate-400">
+          <li class="flex gap-2"><span class="text-strong">+</span><span>Carpetas separadas por responsabilidad.</span></li>
+          <li class="flex gap-2"><span class="text-weak">−</span><span><code class="mono">db/index.js</code> exporta la conexión cruda: el <span class="text-slate-200">SQL queda disperso</span> dentro de las rutas.</span></li>
+          <li class="flex gap-2"><span class="text-weak">−</span><span><span class="text-slate-200">Cero comentarios</span> y <span class="text-slate-200">cero documentación</span>: no hay README.</span></li>
+          <li class="flex gap-2"><span class="text-weak">−</span><span>Sin 404 de API, sin middleware de error, sin apagado ordenado.</span></li>
+        </ul>
+      </div>
+
+      <!-- FUERTE -->
+      <div class="rounded-2xl border border-strong/30 bg-strong/[0.06] p-6 flex flex-col">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="w-2 h-2 rounded-full bg-strong"></span>
+          <span class="mono text-sm font-bold text-strong">./Fuerte</span>
+          <span class="ml-auto text-[11px] uppercase tracking-widest text-slate-500">379 líneas de backend</span>
+        </div>
+
+        <pre class="mono text-[13px] leading-[1.6] text-slate-400 mb-4">server.js            <span class="text-slate-600">213 líneas</span>
+database.js          <span class="text-slate-600">capa de datos + dominio</span>
+middleware/auth.js   <span class="text-slate-600">36</span>
+README.md            <span class="text-slate-600">71 líneas</span></pre>
+
+        <ul class="space-y-2.5 text-[14px] text-slate-400">
+          <li class="flex gap-2"><span class="text-strong">+</span><span>Capa de datos real: <code class="mono text-[13px]">findUserByUsername</code>, <code class="mono text-[13px]">createUser</code>, <code class="mono text-[13px]">listUsers</code> envueltas en promesas.</span></li>
+          <li class="flex gap-2"><span class="text-strong">+</span><span><span class="text-slate-200">JSDoc en cada función</span> exportada y secciones rotuladas.</span></li>
+          <li class="flex gap-2"><span class="text-strong">+</span><span>README con tabla de <span class="text-slate-200">endpoints</span>, variables, ejemplo <code class="mono text-[13px]">curl</code> y estructura.</span></li>
+          <li class="flex gap-2"><span class="text-strong">+</span><span>Manejo de <code class="mono text-[13px]">EADDRINUSE</code> y cierre limpio de la BD en <code class="mono text-[13px]">SIGINT</code>.</span></li>
+          <li class="flex gap-2"><span class="text-weak">−</span><span>Todas las rutas viven en <code class="mono">server.js</code>: crecerá mal a partir de ~10 endpoints.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-5 rounded-lg border border-slate-800 bg-slate-900/50 px-5 py-3">
+      <p class="text-[13px] text-slate-400">
+        <span class="font-bold uppercase tracking-wider text-slate-500 text-[11px]">Versionado de dependencias ·</span>
+        empate: los dos declaran rangos <code class="mono">^</code> en <code class="mono">package.json</code> y fijan versiones exactas con
+        <code class="mono">package-lock.json v3</code> (123 vs. 210 paquetes). La diferencia real está en el metadato:
+        <code class="mono">./Fuerte</code> declara <span class="text-slate-200">licencia, autor y keywords</span>; <code class="mono">./Debil</code> los omite pero sí aporta un script <code class="mono">dev</code> con <code class="mono">--watch</code>.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===================== 4 · OBSERVABILIDAD ===================== -->
+<section>
+  <div class="h-full flex flex-col px-16 pt-10 pb-6">
+
+    <div class="flex items-baseline gap-4">
+      <span class="text-xs font-bold uppercase tracking-[0.28em] text-brand-400">03</span>
+      <h2 class="text-4xl font-black tracking-tight text-white">Observabilidad y Logs</h2>
+    </div>
+    <div class="mt-4 mb-5 h-px w-full bg-gradient-to-r from-brand-500 to-transparent"></div>
+
+    <p class="text-[15px] text-slate-400 mb-5">
+      Misma sesión: un registro, un login fallido, un login correcto y una carga del dashboard.
+      Esto es <span class="text-slate-200">todo</span> lo que imprime cada backend.
+    </p>
+
+    <div class="grid grid-cols-2 gap-6 flex-1">
+
+      <!-- DEBIL -->
+      <div class="flex flex-col">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-2 h-2 rounded-full bg-weak"></span>
+          <span class="mono text-sm font-bold text-weak">./Debil</span>
+          <span class="ml-auto text-[11px] uppercase tracking-widest text-slate-500">1 sentencia console</span>
+        </div>
+
+        <div class="flex-1 rounded-xl border border-slate-800 bg-black/60 overflow-hidden flex flex-col">
+          <div class="flex items-center gap-1.5 px-4 py-2.5 border-b border-slate-800 bg-slate-900/70">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span>
+            <span class="ml-3 text-[11px] mono text-slate-500">npm start</span>
+          </div>
+          <pre class="mono text-[13px] leading-[1.9] p-4 text-slate-400">Servidor escuchando en http://localhost:3002
+<span class="text-slate-700">▍</span></pre>
+          <div class="mt-auto px-4 py-3 border-t border-slate-800 bg-slate-900/40">
+            <p class="text-[13px] text-slate-500">
+              Silencio total. No hay forma de saber <span class="text-slate-300">quién</span> entró,
+              <span class="text-slate-300">qué</span> falló ni <span class="text-slate-300">cuándo</span>.
+              Depurar exige añadir <code class="mono">console.log</code> a mano.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FUERTE -->
+      <div class="flex flex-col">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-2 h-2 rounded-full bg-strong"></span>
+          <span class="mono text-sm font-bold text-strong">./Fuerte</span>
+          <span class="ml-auto text-[11px] uppercase tracking-widest text-slate-500">37 sentencias console</span>
+        </div>
+
+        <div class="flex-1 rounded-xl border border-slate-800 bg-black/60 overflow-hidden flex flex-col">
+          <div class="flex items-center gap-1.5 px-4 py-2.5 border-b border-slate-800 bg-slate-900/70">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500/70"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/70"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-green-500/70"></span>
+            <span class="ml-3 text-[11px] mono text-slate-500">npm start</span>
+          </div>
+          <pre class="mono text-[12.5px] leading-[1.55] p-4 text-slate-400"><span class="text-slate-500">==================================================
+   SERVIDOR DE AUTENTICACIÓN Y DASHBOARD
+==================================================
+   Estado          : </span><span class="text-strong">ACTIVO</span><span class="text-slate-500">
+   URL             : http://localhost:3003
+   Base de datos   : CONECTADA (SQLite)
+   Expiración JWT  : 1h
+==================================================</span>
+<span class="text-sky-400">[2026-09-10T16:09:45.448Z] [POST] [/api/register] - ::1</span>
+<span class="text-violet-400">[DATABASE]</span> Consulta ejecutada: INSERT INTO users
+<span class="text-strong">[REGISTRO]</span> Usuario creado exitosamente: david (ID: 1)
+<span class="text-weak">[AUTH ERROR]</span> Intento de login fallido para david
+<span class="text-strong">[AUTH]</span> Login exitoso para david -&gt; JWT Generado
+<span class="text-amber-400">[SECURITY]</span> Token válido para usuario: david
+<span class="text-weak">[SECURITY ALERT]</span> Acceso no autorizado a /api/users</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5 grid grid-cols-4 gap-3">
+      <div class="rounded-lg border border-slate-800 bg-slate-900/50 px-4 py-2.5">
+        <p class="mono text-[12px] text-sky-400 font-bold">[TIMESTAMP][MÉTODO][RUTA] - IP</p>
+        <p class="text-[12px] text-slate-500 mt-0.5">Middleware HTTP global</p>
+      </div>
+      <div class="rounded-lg border border-slate-800 bg-slate-900/50 px-4 py-2.5">
+        <p class="mono text-[12px] text-violet-400 font-bold">[DATABASE]</p>
+        <p class="text-[12px] text-slate-500 mt-0.5">Traza cada consulta SQL</p>
+      </div>
+      <div class="rounded-lg border border-slate-800 bg-slate-900/50 px-4 py-2.5">
+        <p class="mono text-[12px] text-amber-400 font-bold">[SECURITY] / [SECURITY ALERT]</p>
+        <p class="text-[12px] text-slate-500 mt-0.5">Auditoría de accesos</p>
+      </div>
+      <div class="rounded-lg border border-slate-800 bg-slate-900/50 px-4 py-2.5">
+        <p class="mono text-[12px] text-weak font-bold">[SERVER ERROR] / [FATAL]</p>
+        <p class="text-[12px] text-slate-500 mt-0.5">Fallos con contexto</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===================== 5 · FRONTEND ===================== -->
+<section>
+  <div class="h-full flex flex-col px-16 pt-10 pb-6">
+
+    <div class="flex items-baseline gap-4">
+      <span class="text-xs font-bold uppercase tracking-[0.28em] text-brand-400">04</span>
+      <h2 class="text-4xl font-black tracking-tight text-white">Experiencia de Usuario · Frontend</h2>
+    </div>
+    <div class="mt-4 mb-5 h-px w-full bg-gradient-to-r from-brand-500 to-transparent"></div>
+
+    <table class="w-full text-[15px]">
+      <thead>
+        <tr class="text-[11px] uppercase tracking-widest text-slate-500">
+          <th class="text-left font-semibold pb-3 pl-2 w-[22%]">Aspecto</th>
+          <th class="text-left font-semibold pb-3 px-4 w-[39%]"><span class="mono text-weak">./Debil</span></th>
+          <th class="text-left font-semibold pb-3 px-4 w-[39%]"><span class="mono text-strong">./Fuerte</span></th>
+        </tr>
+      </thead>
+      <tbody class="align-top">
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Interfaz</td>
+          <td class="py-3 px-4 text-slate-400">
+            HTML plano + <code class="mono text-[13px]">style.css</code> a mano (183 líneas).<br />
+            <span class="text-slate-500 text-[13px]">Tema claro genérico, sin iconografía, sin responsive real.</span>
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            <span class="text-slate-200">Tailwind CSS</span> con paleta <code class="mono text-[13px]">brand</code> propia y tema oscuro.<br />
+            <span class="text-slate-500 text-[13px]">Iconos SVG, tarjetas de métricas, badge «tú», breakpoints <code class="mono">sm:</code>.</span>
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Estados de carga</td>
+          <td class="py-3 px-4 text-slate-400">
+            Ninguno. El botón se puede pulsar N veces seguidas.
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            Spinner animado + <code class="mono text-[13px]">disabled</code> durante la petición y botón «Actualizar».
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200"><code class="mono">localStorage</code></td>
+          <td class="py-3 px-4 text-slate-400">
+            Claves globales <code class="mono text-[13px] text-weak">'token'</code> y <code class="mono text-[13px] text-weak">'user'</code>, leídas sueltas.<br />
+            <span class="text-slate-500 text-[13px]">Un <code class="mono">JSON.parse</code> sin protección rompe la página si el dato se corrompe.</span>
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            Objeto <code class="mono text-[13px] text-strong">storage</code> con claves namespaced <code class="mono text-[13px]">auth_token</code> / <code class="mono text-[13px]">auth_user</code>.<br />
+            <span class="text-slate-500 text-[13px]">Parseo defensivo en <code class="mono">try/catch</code> y método <code class="mono">clear()</code> único.</span>
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Guardia de ruta</td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono text-[13px]">location.href</code> sin <code class="mono">return</code>: el script sigue ejecutándose y el
+            <span class="text-slate-200">botón «atrás» vuelve</span> a la vista protegida.
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono text-[13px]">location.replace()</code> + <code class="mono">return</code>: no deja rastro en el historial.
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Sesión expirada</td>
+          <td class="py-3 px-4 text-slate-400">
+            Redirección <span class="text-weak font-semibold">silenciosa</span> al login. El usuario no sabe por qué lo expulsaron.
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            Redirige con <code class="mono text-[13px]">?motivo=</code> y muestra un aviso:
+            <span class="italic">«Tu sesión expiró. Inicia sesión de nuevo.»</span>
+          </td>
+        </tr>
+        <tr class="border-t border-slate-800">
+          <td class="py-3 pl-2 font-semibold text-slate-200">Errores</td>
+          <td class="py-3 px-4 text-slate-400">
+            Texto rojo suelto en un <code class="mono text-[13px]">&lt;div&gt;</code>, un contenedor distinto por formulario.
+          </td>
+          <td class="py-3 px-4 text-slate-400">
+            <code class="mono text-[13px]">showAlert(tipo, msg)</code> unificado con variantes
+            <span class="text-weak">error</span> / <span class="text-strong">success</span> / <span class="text-sky-400">info</span>.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mt-auto pt-4 rounded-lg border border-slate-800 bg-slate-900/50 px-5 py-3">
+      <p class="text-[13px] text-slate-400">
+        <span class="font-bold uppercase tracking-wider text-slate-500 text-[11px]">Empate honesto ·</span>
+        los dos escapan el HTML antes de pintar datos del servidor, así que ninguno es vulnerable a XSS en la tabla de usuarios.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===================== 6 · CONCLUSIÓN ===================== -->
+<section>
+  <div class="h-full flex flex-col px-16 pt-10 pb-6">
+
+    <div class="flex items-baseline gap-4">
+      <span class="text-xs font-bold uppercase tracking-[0.28em] text-brand-400">05</span>
+      <h2 class="text-4xl font-black tracking-tight text-white">Conclusión · Resumen ejecutivo</h2>
+    </div>
+    <div class="mt-4 mb-6 h-px w-full bg-gradient-to-r from-brand-500 to-transparent"></div>
+
+    <p class="text-[19px] leading-relaxed text-slate-300 mb-6 max-w-[62rem]">
+      Los dos proyectos <span class="text-slate-100 font-semibold">funcionan</span>. La diferencia no es si compilan,
+      sino <span class="text-slate-100 font-semibold">cuánto trabajo queda pendiente</span> antes de poder desplegarlos.
+      El prompt débil entrega un prototipo; el prompt fuerte entrega un entregable.
+    </p>
+
+    <div class="grid grid-cols-3 gap-5 flex-1">
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 flex flex-col">
+        <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-brand-400 mb-3">Ahorra tiempo</span>
+        <h3 class="text-xl font-bold text-white mb-3 leading-snug">Menos iteraciones de ida y vuelta</h3>
+        <p class="text-[14px] leading-relaxed text-slate-400">
+          Pedir logs, README, validaciones y manejo de errores <span class="text-slate-200">en el primer prompt</span>
+          evita 4 o 5 rondas de «ahora añádele…». El código de <code class="mono text-[13px]">./Fuerte</code> es 86 % más extenso,
+          pero ese volumen es justamente el trabajo que en <code class="mono text-[13px]">./Debil</code> tendrías que escribir tú después.
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 flex flex-col">
+        <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-weak mb-3">Evita fallos</span>
+        <h3 class="text-xl font-bold text-white mb-3 leading-snug">La seguridad no se improvisa</h3>
+        <p class="text-[14px] leading-relaxed text-slate-400">
+          Un secreto JWT sin validar, cero <code class="mono text-[13px]">try/catch</code> y datos personales dentro del token
+          son riesgos que <span class="text-slate-200">nadie detecta probando la app</span>: solo aparecen en producción.
+          El prompt fuerte los cierra porque el requisito estaba escrito desde el inicio.
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 flex flex-col">
+        <span class="text-[11px] font-bold uppercase tracking-[0.2em] text-strong mb-3">Listo para producción</span>
+        <h3 class="text-xl font-bold text-white mb-3 leading-snug">Operable desde el día uno</h3>
+        <p class="text-[14px] leading-relaxed text-slate-400">
+          Logs con timestamp e IP, aviso claro si el puerto está ocupado, apagado ordenado de la base de datos
+          y un README que documenta cada endpoint. Es la diferencia entre
+          <span class="text-slate-200">un demo</span> y algo que otra persona puede mantener.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 rounded-2xl border border-brand-500/40 bg-brand-500/[0.08] px-7 py-5">
+      <p class="text-[17px] leading-relaxed text-slate-200">
+        <span class="font-black text-brand-400">La regla:</span>
+        el modelo no adivina tus estándares de calidad. Especifica <span class="font-semibold text-white">criterios verificables</span>
+        —hashing, validación de configuración, formato de logs, manejo de errores, documentación—
+        y obtendrás código listo para revisión, no un punto de partida.
+      </p>
+    </div>
+
+    <p class="mt-5 text-center text-[13px] text-slate-600 mono">
+      Análisis sobre ./Debil (534 líneas) y ./Fuerte (993 líneas) · Claude Code
+    </p>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+<script>
+  Reveal.initialize({
+    width: 1280,
+    height: 720,
+    margin: 0.03,
+    minScale: 0.2,
+    maxScale: 1.5,
+    center: false,
+    hash: true,
+    controls: true,
+    progress: true,
+    keyboard: true,
+    slideNumber: 'c/t',
+    transition: 'slide',
+    backgroundTransition: 'fade'
+  });
+</script>
+
+</body>
+</html>
