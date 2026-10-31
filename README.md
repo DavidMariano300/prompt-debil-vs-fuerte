@@ -7,6 +7,10 @@ a una distancia enorme de poder desplegarse.
 > **La tesis:** el modelo no adivina tus estándares de calidad. Lo que no pides explícitamente
 > —logging, validación de configuración, manejo de errores, documentación— simplemente no aparece.
 
+![Pantalla de inicio de sesión de ./Debil (izquierda) y ./Fuerte (derecha)](img/debil_vs_fuerte.png)
+
+**Tecnologías:** Node.js, Express, JWT, bcrypt, SQLite, HTML/CSS y Tailwind CSS; presentación con Reveal.js.
+
 ---
 
 ## ⚠️ Aviso de seguridad
