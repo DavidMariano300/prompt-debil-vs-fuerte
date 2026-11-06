@@ -1,127 +1,104 @@
-# Prompt Débil vs. Prompt Fuerte
+# Weak Prompt vs. Strong Prompt
 
-Un experimento controlado de **ingeniería de prompts**: la misma tarea, el mismo modelo, dos
-instrucciones distintas. El resultado son dos aplicaciones que **funcionan igual** pero que están
-a una distancia enorme de poder desplegarse.
+A controlled **prompt engineering** experiment: same task, same model, two different instructions. The result is two applications that **work the same** but are miles apart in terms of being ready to deploy.
 
-> **La tesis:** el modelo no adivina tus estándares de calidad. Lo que no pides explícitamente
-> —logging, validación de configuración, manejo de errores, documentación— simplemente no aparece.
+> **The thesis:** the model doesn't guess your quality standards. Whatever you don't explicitly ask for (logging, configuration validation, error handling, documentation) simply doesn't appear.
 
-![Pantalla de inicio de sesión de ./Debil (izquierda) y ./Fuerte (derecha)](img/debil_vs_fuerte.png)
+![Login screen of ./Debil (left) and ./Fuerte (right)](img/debil_vs_fuerte.png)
 
-**Tecnologías:** Node.js, Express, JWT, bcrypt, SQLite, HTML/CSS y Tailwind CSS; presentación con Reveal.js.
+**Technologies:** Node.js, Express, JWT, bcrypt, SQLite, HTML/CSS and Tailwind CSS; presentation built with Reveal.js.
 
----
-
-## ⚠️ Aviso de seguridad
-
-**`./Debil` contiene código deliberadamente deficiente y se publica únicamente como material
-didáctico.** No lo copies, no lo uses como plantilla y no lo despliegues. Sus fallos están
-documentados a propósito en [`HALLAZGOS.md`](HALLAZGOS.md).
-
-Ninguna de las dos carpetas contiene credenciales reales: los archivos `.env` están excluidos del
-repositorio y sus valores originales eran cadenas de ejemplo.
+`Debil` holds the weak-prompt result and `Fuerte` the strong-prompt result. The apps, [`HALLAZGOS.md`](HALLAZGOS.md), [`PROMPTS.md`](PROMPTS.md) and the presentation are in Spanish.
 
 ---
 
-## El experimento
+## ⚠️ Security notice
 
-Ambos proyectos resuelven el mismo enunciado: una aplicación web con **registro y login con JWT,
-contraseñas hasheadas con bcrypt, base de datos SQLite y un dashboard protegido** que lista los
-usuarios registrados.
+**`./Debil` contains deliberately deficient code and is published only as teaching material.** Don't copy it, use it as a template or deploy it. Its flaws are documented on purpose in [`HALLAZGOS.md`](HALLAZGOS.md).
+
+Neither folder contains real credentials: the `.env` files are excluded from the repository and their original values were sample strings.
+
+---
+
+## The experiment
+
+Both projects solve the same brief: a web application with **JWT sign-up and login, passwords hashed with bcrypt, a SQLite database and a protected dashboard** that lists registered users.
 
 | | `./Debil` | `./Fuerte` |
 |---|---|---|
-| Líneas de código | 534 | 993 |
-| Líneas de backend | 118 | 379 |
-| Sentencias `console.*` en backend | **1** | **37** |
-| Bloques `try/catch` en rutas | **0** | **4** |
-| Documentación | ninguna | README de 71 líneas |
-| Comentarios / JSDoc | ninguno | en cada función exportada |
-| Puerto | 3002 | 3003 |
+| Lines of code | 534 | 993 |
+| Backend lines | 118 | 379 |
+| `console.*` statements in backend | **1** | **37** |
+| `try/catch` blocks in routes | **0** | **4** |
+| Documentation | none | 71-line README |
+| Comments / JSDoc | none | on every exported function |
+| Port | 3002 | 3003 |
 
 ---
 
-## Los cuatro hallazgos principales
+## The four main findings
 
-**1. Observabilidad — la diferencia más brutal.**
-`./Debil` imprime **una sola línea** en todo su ciclo de vida: el mensaje de arranque. No sabes
-quién entró, qué falló ni cuándo. `./Fuerte` registra cada petición HTTP con timestamp e IP, cada
-consulta SQL y cada evento de seguridad (`[AUTH]`, `[SECURITY ALERT]`, `[SERVER ERROR]`).
+**1. Observability: the starkest difference.**
+`./Debil` prints **a single line** in its entire lifecycle: the startup message. You can't tell who logged in, what failed or when. `./Fuerte` logs every HTTP request with timestamp and IP, every SQL query and every security event (`[AUTH]`, `[SECURITY ALERT]`, `[SERVER ERROR]`).
 
-**2. Configuración — fallar pronto vs. fallar en producción.**
-`./Debil` usa `process.env.JWT_SECRET` sin validarlo: arranca sin problema aunque falte el `.env`
-y revienta con un 500 en el primer login. `./Fuerte` comprueba la variable al arrancar y se niega
-a levantar con un mensaje claro.
+**2. Configuration: failing early vs. failing in production.**
+`./Debil` uses `process.env.JWT_SECRET` without validating it: it starts fine even without `.env`, then crashes with a 500 on the first login. `./Fuerte` checks the variable at startup and refuses to run, with a clear message.
 
-**3. Manejo de errores — cero red de seguridad.**
-`./Debil` no tiene un solo `try/catch` en sus rutas: cualquier fallo de base de datos escapa a
-Express y expone el stack trace. `./Fuerte` envuelve cada endpoint, añade un middleware de error
-y un 404 en formato JSON para `/api`.
+**3. Error handling: no safety net.**
+`./Debil` doesn't have a single `try/catch` in its routes, so any database failure escapes to Express and exposes the stack trace. `./Fuerte` wraps every endpoint and adds an error middleware and a JSON 404 for `/api`.
 
-**4. Interfaz — plantilla genérica vs. producto.**
-`./Debil` usa HTML plano con 183 líneas de CSS escritas a mano, sin estados de carga: el botón de
-login se puede pulsar N veces seguidas. `./Fuerte` usa Tailwind con tema oscuro, spinner, botones
-que se deshabilitan, tarjetas de métricas y un aviso explícito cuando la sesión expira.
+**4. Interface: generic template vs. product.**
+`./Debil` uses plain HTML with 183 lines of handwritten CSS and no loading states, so the login button can be pressed repeatedly. `./Fuerte` uses Tailwind with a dark theme, a spinner, buttons that disable themselves, metric cards and an explicit notice when the session expires.
 
-### Lo que NO es diferente
+### What is NOT different
 
-Para que la comparación sea honesta, conviene decir en qué empatan:
+To keep the comparison honest, here is where they tie:
 
-- Los dos usan **bcrypt con salt de 10** y nunca guardan contraseñas en texto plano.
-- Los dos usan **consultas parametrizadas**: ninguno es vulnerable a inyección SQL.
-- Los dos **escapan el HTML** antes de pintar datos del servidor: ninguno es vulnerable a XSS.
-- Los dos fijan versiones con `package-lock.json` v3.
-- **Ninguno** incluye un `.env.example`.
+- Both use **bcrypt with a salt of 10** and never store plain-text passwords.
+- Both use **parameterized queries**, so neither is vulnerable to SQL injection.
+- Both **escape HTML** before rendering server data, so neither is vulnerable to XSS.
+- Both pin versions with `package-lock.json` v3.
+- **Neither** includes a `.env.example`.
 
-Y un matiz que va en contra del titular: en organización de carpetas `./Debil` está *mejor*
-separado (`routes/`, `middleware/`, `db/`) que el `server.js` monolítico de `./Fuerte`. Lo que le
-falta es sustancia dentro de esa estructura. El análisis completo está en
-[`HALLAZGOS.md`](HALLAZGOS.md).
+One nuance goes against the headline: in folder organization, `./Debil` is *better* separated (`routes/`, `middleware/`, `db/`) than the monolithic `server.js` in `./Fuerte`. What it lacks is substance inside that structure. The full analysis is in [`HALLAZGOS.md`](HALLAZGOS.md).
 
 ---
 
-## Presentación
+## Presentation
 
-[`presentacion.html`](presentacion.html) — 6 diapositivas (Reveal.js + Tailwind, tema oscuro).
-Se navega con las flechas del teclado. Ábrelo directamente en el navegador; requiere conexión a
-internet porque carga las librerías por CDN.
+[`presentacion.html`](presentacion.html) has 6 slides (Reveal.js + Tailwind, dark theme). Navigate with the arrow keys. Open it directly in a browser; it needs an internet connection because it loads its libraries from a CDN.
 
 ---
 
-## Compruébalo tú mismo
+## Try it yourself
 
-Los tres experimentos que hacen la diferencia evidente:
+Three experiments make the difference obvious:
 
-### 1. Quita la configuración
+### 1. Remove the configuration
 
 ```bash
 cd Fuerte && mv .env .env.bak && npm start
 ```
 
-`./Fuerte` se niega a arrancar: `[CONFIG ERROR] Falta la variable JWT_SECRET`. Haz lo mismo en
-`./Debil`: arranca con normalidad y solo falla —con un 500 opaco— cuando alguien intenta entrar.
+`./Fuerte` refuses to start: `[CONFIG ERROR] Falta la variable JWT_SECRET`. Do the same in `./Debil`: it starts normally and only fails, with an opaque 500, when someone tries to log in.
 
-### 2. Observa la consola durante un login
+### 2. Watch the console during a login
 
-Registra un usuario y entra en cada app mirando la terminal. En `./Debil` no se mueve nada. En
-`./Fuerte` verás la traza completa de la petición, la consulta SQL y la generación del JWT.
+Register a user and log in to each app while watching the terminal. In `./Debil` nothing moves. In `./Fuerte` you'll see the full request trace, the SQL query and the JWT generation.
 
-### 3. Usa un token inválido
+### 3. Use an invalid token
 
 ```bash
 curl -i http://localhost:3003/api/users -H "Authorization: Bearer token-falso"
 ```
 
-`./Fuerte` responde 401, distingue si el token expiró y deja un `[SECURITY ALERT]` en el log.
-`./Debil` responde 401 genérico y no registra nada.
+`./Fuerte` returns 401, distinguishes whether the token expired and leaves a `[SECURITY ALERT]` in the log. `./Debil` returns a generic 401 and logs nothing.
 
 ---
 
-## Puesta en marcha
+## Getting started
 
-Cada proyecto es independiente. Los archivos `.env` **no** están en el repositorio (a propósito),
-así que hay que crearlos:
+Each project is independent. The `.env` files are **not** in the repository (on purpose), so you need to create them:
 
 ```bash
 cd Debil
@@ -137,33 +114,29 @@ printf 'PORT=3003\nJWT_SECRET=%s\nJWT_EXPIRES_IN=1h\n' "$(openssl rand -hex 32)"
 npm start   # http://localhost:3003
 ```
 
-Ambos crean su base de datos SQLite en el primer arranque. Se pueden ejecutar a la vez: usan
-puertos distintos.
+Both create their SQLite database on first run. They can run at the same time, since they use different ports.
 
-| Variable | Descripción | `Debil` | `Fuerte` |
+| Variable | Description | `Debil` | `Fuerte` |
 |---|---|---|---|
-| `PORT` | Puerto del servidor | `3002` | `3003` |
-| `JWT_SECRET` | Clave para firmar los tokens | requerida | requerida (validada al arrancar) |
-| `JWT_EXPIRES_IN` | Vigencia del token | `1h` | `1h` |
+| `PORT` | Server port | `3002` | `3003` |
+| `JWT_SECRET` | Key used to sign tokens | required | required (validated at startup) |
+| `JWT_EXPIRES_IN` | Token lifetime | `1h` | `1h` |
 
 ---
 
-## Estructura
+## Structure
 
 ```
-├── Debil/            Resultado del prompt débil  — 534 líneas
-├── Fuerte/           Resultado del prompt fuerte — 993 líneas
-├── presentacion.html Comparativa en 6 diapositivas
-├── HALLAZGOS.md      Análisis técnico detallado, con referencias a archivo y línea
-├── PROMPTS.md        Los dos prompts que originaron cada proyecto
+├── Debil/            Weak prompt result   (534 lines)
+├── Fuerte/           Strong prompt result (993 lines)
+├── presentacion.html 6-slide comparison
+├── HALLAZGOS.md      Detailed technical analysis, with file and line references
+├── PROMPTS.md        The two prompts behind each project
 └── README.md
 ```
 
 ---
 
-## Metodología
+## Methodology
 
-El análisis se hizo leyendo el código fuente completo de ambos proyectos. Las métricas
-(líneas, sentencias `console.*`, bloques `try/catch`, número de paquetes) se midieron con `wc`,
-`grep` y los `package-lock.json`, no a ojo. Cada afirmación de [`HALLAZGOS.md`](HALLAZGOS.md)
-apunta a un archivo y una línea concretos para que puedas verificarla.
+The analysis came from reading the full source code of both projects. The metrics (lines, `console.*` statements, `try/catch` blocks, package counts) were measured with `wc`, `grep` and the `package-lock.json` files, not estimated. Every claim in [`HALLAZGOS.md`](HALLAZGOS.md) points to a specific file and line so you can verify it.
